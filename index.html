@@ -380,10 +380,15 @@ document.getElementById('ansSec').addEventListener('keydown', e => {
   if(e.key === 'Enter' && !answered) checkAnswer();
 });
 document.getElementById('ansHour').addEventListener('keydown', e => {
-  if(e.key === 'Enter') document.getElementById('ansMin').focus();
+  if(e.key === 'Enter') {
+    // 0분 0초면 바로 확인
+    if(minutes === 0 && seconds === 0 && !answered) checkAnswer();
+    else document.getElementById('ansMin').focus();
+  }
 });
 document.getElementById('ansMin').addEventListener('keydown', e => {
   if(e.key === 'Enter') {
+    // 0초면 바로 확인
     if(seconds === 0 && !answered) checkAnswer();
     else document.getElementById('ansSec').focus();
   }
@@ -394,17 +399,19 @@ function checkAnswer() {
   const ah=parseInt(document.getElementById('ansHour').value);
   const am=parseInt(document.getElementById('ansMin').value);
   const as=parseInt(document.getElementById('ansSec').value);
-  if(isNaN(ah)||isNaN(am)){alert('시와 분을 입력해 주세요!');return;}
+  if(isNaN(ah)){alert('시를 입력해 주세요!');return;}
   if(isNaN(as) && seconds !== 0){alert('초를 입력해 주세요!');return;}
+  const finalMin = isNaN(am) ? 0 : am;
   const finalSec = isNaN(as) ? 0 : as;
 
   const ch=hours%12||12;
-  const ok=ah===ch&&am===minutes&&finalSec===seconds;
+  const ok=ah===ch&&finalMin===minutes&&finalSec===seconds;
   total++; if(ok) correct++;
   answered=true;
 
+  const ansMinLabel = isNaN(am) ? '0(미입력)' : String(am);
   const ansSecLabel = isNaN(as) ? '0(미입력)' : String(as);
-  history.unshift({num:total, time:`${ch}시 ${minutes}분 ${seconds}초`, ans:`${ah}시 ${am}분 ${ansSecLabel}초`, ok});
+  history.unshift({num:total, time:`${ch}시 ${minutes}분 ${seconds}초`, ans:`${ah}시 ${ansMinLabel}분 ${ansSecLabel}초`, ok});
 
   const box=document.getElementById('resultBox');
   box.style.display='block';
