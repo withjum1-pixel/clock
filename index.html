@@ -1,260 +1,346 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body {
+html, body {
   font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
   background: #f0f4ff;
-  min-height: 100vh;
+  height: 100%;
+  overflow: hidden;
+}
+body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 10px 8px;
+  padding: 8px 10px 6px;
+  height: 100vh;
 }
-h1 { font-size: 34px; font-weight: 700; color: #1a237e; margin-bottom: 6px; }
-.drag-tip { font-size: 19px; color: #5c6bc0; background: #e8eaf6; border-radius: 10px; padding: 7px 22px; margin: 5px 0; }
-.legend { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin: 5px 0; }
-.legend-item { display: flex; align-items: center; gap: 6px; font-size: 19px; color: #3949ab; font-weight: 700; }
-canvas { display: block; cursor: crosshair; max-width: 100%; }
-
-/* 점수판 */
-.scoreboard {
-  display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
-  width: 100%; max-width: 760px; margin: 10px 0 4px;
+.top-bar {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+  max-width: 1400px;
+  margin-bottom: 6px;
+  flex-shrink: 0;
+}
+h1 { font-size: 24px; font-weight: 700; color: #1a237e; white-space: nowrap; }
+.drag-tip { font-size: 13px; color: #5c6bc0; background: #e8eaf6; border-radius: 8px; padding: 4px 14px; }
+.legend { display: flex; gap: 14px; align-items: center; margin-left: auto; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 13px; color: #3949ab; font-weight: 700; }
+ 
+/* 메인 3열 — 남은 높이 전부 사용 */
+.main-layout {
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+  width: 100%;
+  max-width: 1400px;
+  flex: 1;
+  min-height: 0;
+}
+ 
+/* ── 왼쪽: 점수판 ── */
+.left-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 175px;
+  flex-shrink: 0;
 }
 .score-card {
-  flex: 1; min-width: 130px;
-  background: #fff; border-radius: 16px; padding: 14px 10px;
-  box-shadow: 0 2px 12px rgba(57,73,171,0.10);
+  background: #fff;
+  border-radius: 14px;
+  padding: 0 8px;
+  box-shadow: 0 2px 10px rgba(57,73,171,0.10);
   text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
-.score-card .sc-label { font-size: 18px; color: #5c6bc0; font-weight: 700; margin-bottom: 6px; }
-.score-card .sc-val { font-size: 44px; font-weight: 700; }
-.sc-total .sc-val { color: #3949ab; }
+.sc-label { font-size: 13px; color: #5c6bc0; font-weight: 700; margin-bottom: 2px; }
+.sc-val { font-size: 48px; font-weight: 700; line-height: 1; }
+.sc-total .sc-val   { color: #3949ab; }
 .sc-correct .sc-val { color: #2e7d32; }
-.sc-wrong .sc-val { color: #c62828; }
-.sc-pct .sc-val { color: #e65100; }
+.sc-wrong .sc-val   { color: #c62828; }
+.sc-pct .sc-val     { color: #e65100; }
 .reset-score-btn {
-  background: #fff; color: #c62828; font-size: 16px; font-weight: 700;
-  padding: 7px 20px; border: 2px solid #c62828; border-radius: 10px; cursor: pointer; margin-top: 8px;
+  background: #fff; color: #c62828; font-size: 13px; font-weight: 700;
+  padding: 8px 6px; border: 2px solid #c62828; border-radius: 10px;
+  cursor: pointer; width: 100%; flex-shrink: 0;
 }
 .reset-score-btn:hover { background: #ffebee; }
-
-/* 문제 박스 */
-.question-box {
-  background: #fff; border-radius: 20px; padding: 18px 30px;
-  box-shadow: 0 4px 20px rgba(57,73,171,0.12);
-  text-align: center; width: 100%; max-width: 760px; margin-top: 6px;
+ 
+/* ── 가운데: 시계 ── */
+.center-panel {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.question-label { font-size: 32px; font-weight: 700; color: #1a237e; margin-bottom: 10px; }
-.time-display { font-size: 52px; font-weight: 700; color: #3949ab; letter-spacing: 2px; margin-bottom: 14px; }
-.inputs { display: flex; gap: 12px; justify-content: center; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
-.input-group { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.input-group label { font-size: 21px; font-weight: 700; color: #3949ab; }
+canvas { display: block; cursor: crosshair; }
+ 
+/* ── 오른쪽: 문제 + 히스토리 ── */
+.right-panel {
+  width: 320px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+ 
+.question-box {
+  background: #fff;
+  border-radius: 20px;
+  padding: 22px 20px;
+  box-shadow: 0 4px 18px rgba(57,73,171,0.12);
+  text-align: center;
+  flex-shrink: 0;
+}
+.question-label { font-size: 24px; font-weight: 700; color: #1a237e; margin-bottom: 14px; }
+.inputs {
+  display: flex; gap: 6px; justify-content: center;
+  align-items: center; margin-bottom: 16px;
+}
+.input-group { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.input-group label { font-size: 18px; font-weight: 700; color: #3949ab; }
 .input-group input {
-  width: 108px; height: 68px; font-size: 38px; font-weight: 700;
+  width: 76px; height: 72px; font-size: 38px; font-weight: 700;
   text-align: center; border: 3px solid #7986cb; border-radius: 14px;
   outline: none; color: #1a237e; background: #f3f4ff;
 }
 .input-group input:focus { border-color: #3949ab; background: #e8eaf6; }
-.sep { font-size: 42px; font-weight: 700; color: #3949ab; padding-top: 24px; }
-.btn-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+.sep { font-size: 36px; font-weight: 700; color: #3949ab; padding-top: 24px; }
+ 
+/* 버튼 */
+.btn-row { display: flex; gap: 8px; justify-content: center; }
 .check-btn {
-  background: #3949ab; color: #fff; font-size: 28px; font-weight: 700;
-  padding: 13px 42px; border: none; border-radius: 16px; cursor: pointer; letter-spacing: 2px;
+  background: #3949ab; color: #fff; font-size: 20px; font-weight: 700;
+  padding: 13px 0; border: none; border-radius: 12px; cursor: pointer; flex: 1;
 }
 .check-btn:hover { background: #1a237e; }
 .next-btn {
-  background: #2e7d32; color: #fff; font-size: 28px; font-weight: 700;
-  padding: 13px 32px; border: none; border-radius: 16px; cursor: pointer; display: none;
+  background: #2e7d32; color: #fff; font-size: 20px; font-weight: 700;
+  padding: 13px 0; border: none; border-radius: 12px; cursor: pointer; display: none; flex: 1;
 }
 .next-btn:hover { background: #1b5e20; }
-.result-box { margin-top: 14px; font-size: 36px; font-weight: 700; padding: 15px 34px; border-radius: 16px; display: none; }
+.result-box {
+  margin-top: 12px; font-size: 20px; font-weight: 700;
+  padding: 12px 14px; border-radius: 12px; display: none; line-height: 1.5;
+}
 .result-box.correct { background: #e8f5e9; color: #2e7d32; }
-.result-box.wrong { background: #ffebee; color: #c62828; }
-
+.result-box.wrong   { background: #ffebee; color: #c62828; }
+ 
 /* 히스토리 */
-.history-wrap { width: 100%; max-width: 760px; margin-top: 10px; }
-.history-title { font-size: 22px; font-weight: 700; color: #3949ab; margin-bottom: 8px; text-align: center; }
-.history-list { display: flex; flex-direction: column; gap: 8px; }
+.history-wrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.history-title { font-size: 14px; font-weight: 700; color: #3949ab; margin-bottom: 6px; text-align: center; flex-shrink: 0; }
+.history-list { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
 .history-item {
-  display: flex; align-items: center; gap: 12px;
-  background: #fff; border-radius: 12px; padding: 10px 18px;
-  font-size: 20px; font-weight: 600;
-  box-shadow: 0 1px 6px rgba(57,73,171,0.07);
+  background: #fff; border-radius: 10px; padding: 7px 10px;
+  font-size: 12px; font-weight: 600;
+  box-shadow: 0 1px 5px rgba(57,73,171,0.07);
+  flex-shrink: 0;
 }
-.h-num { color: #9fa8da; min-width: 32px; }
-.h-time { color: #1a237e; flex: 1; }
-.h-ans { color: #5c6bc0; flex: 1; }
-.h-badge {
-  font-size: 18px; font-weight: 700; padding: 4px 16px; border-radius: 8px; min-width: 70px; text-align: center;
-}
+.h-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+.h-num  { color: #9fa8da; }
+.h-badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 5px; }
 .h-badge.ok { background: #e8f5e9; color: #2e7d32; }
 .h-badge.no { background: #ffebee; color: #c62828; }
+.h-time { color: #1a237e; }
+.h-ans  { color: #5c6bc0; }
 </style>
 </head>
 <body>
-<h1>🕐 시각 읽기 연습</h1>
-<p class="drag-tip">✋ 시침·분침·초침을 드래그해서 문제를 만들고 답을 입력하세요!</p>
-<div class="legend">
-  <div class="legend-item"><div style="background:#1a237e;height:10px;width:34px;border-radius:3px;"></div>시침</div>
-  <div class="legend-item"><div style="background:#1565c0;height:6px;width:34px;border-radius:3px;"></div>분침</div>
-  <div class="legend-item"><div style="background:#e53935;height:3px;width:34px;border-radius:3px;"></div>초침</div>
-</div>
-
-<!-- 점수판 -->
-<div class="scoreboard">
-  <div class="score-card sc-total"><div class="sc-label">총 문제</div><div class="sc-val" id="scTotal">0</div></div>
-  <div class="score-card sc-correct"><div class="sc-label">✅ 맞힌 수</div><div class="sc-val" id="scCorrect">0</div></div>
-  <div class="score-card sc-wrong"><div class="sc-label">❌ 틀린 수</div><div class="sc-val" id="scWrong">0</div></div>
-  <div class="score-card sc-pct"><div class="sc-label">🏆 정답률</div><div class="sc-val" id="scPct">-</div></div>
-</div>
-<button class="reset-score-btn" onclick="resetScore()">점수 초기화 🔄</button>
-
-<canvas id="clock" width="760" height="760"></canvas>
-
-<!-- 문제 박스 -->
-<div class="question-box">
-  <div class="question-label">몇 시일까요? 👇</div>
-  <div class="time-display" id="timeDisplay">--:--:--</div>
-  <div class="inputs">
-    <div class="input-group"><label>시</label><input type="number" id="ansHour" min="1" max="12" placeholder="시"></div>
-    <div class="sep">:</div>
-    <div class="input-group"><label>분</label><input type="number" id="ansMin" min="0" max="59" placeholder="분"></div>
-    <div class="sep">:</div>
-    <div class="input-group"><label>초</label><input type="number" id="ansSec" min="0" max="59" placeholder="초"></div>
+ 
+<div class="top-bar">
+  <h1>🕐 시각 읽기 연습</h1>
+  <span class="drag-tip">✋ 시침·분침·초침을 드래그해서 시각 설정 → 답 입력 후 확인!</span>
+  <div class="legend">
+    <div class="legend-item"><div style="background:#1a237e;height:9px;width:24px;border-radius:3px;"></div>시침</div>
+    <div class="legend-item"><div style="background:#1565c0;height:5px;width:24px;border-radius:3px;"></div>분침</div>
+    <div class="legend-item"><div style="background:#e53935;height:3px;width:24px;border-radius:3px;"></div>초침</div>
   </div>
-  <div class="btn-row">
-    <button class="check-btn" id="checkBtn" onclick="checkAnswer()">확인하기 ✅</button>
-    <button class="next-btn" id="nextBtn" onclick="nextQuestion()">다음 문제 ➡️</button>
+</div>
+ 
+<div class="main-layout">
+ 
+  <!-- 왼쪽: 점수판 -->
+  <div class="left-panel">
+    <div class="score-card sc-total">
+      <div class="sc-label">총 문제</div>
+      <div class="sc-val" id="scTotal">0</div>
+    </div>
+    <div class="score-card sc-correct">
+      <div class="sc-label">✅ 맞힌 수</div>
+      <div class="sc-val" id="scCorrect">0</div>
+    </div>
+    <div class="score-card sc-wrong">
+      <div class="sc-label">❌ 틀린 수</div>
+      <div class="sc-val" id="scWrong">0</div>
+    </div>
+    <div class="score-card sc-pct">
+      <div class="sc-label">🏆 정답률</div>
+      <div class="sc-val" id="scPct">-</div>
+    </div>
+    <button class="reset-score-btn" onclick="resetScore()">점수 초기화 🔄</button>
   </div>
-  <div class="result-box" id="resultBox"></div>
+ 
+  <!-- 가운데: 시계 -->
+  <div class="center-panel">
+    <canvas id="clock"></canvas>
+  </div>
+ 
+  <!-- 오른쪽: 문제 + 히스토리 -->
+  <div class="right-panel">
+    <div class="question-box">
+      <div class="question-label">몇 시일까요? 👇</div>
+      <div class="inputs">
+        <div class="input-group">
+          <label>시</label>
+          <input type="number" id="ansHour" min="1" max="12" placeholder="시">
+        </div>
+        <div class="sep">:</div>
+        <div class="input-group">
+          <label>분</label>
+          <input type="number" id="ansMin" min="0" max="59" placeholder="분">
+        </div>
+        <div class="sep">:</div>
+        <div class="input-group">
+          <label>초</label>
+          <input type="number" id="ansSec" min="0" max="59" placeholder="초">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="check-btn" id="checkBtn" onclick="checkAnswer()">확인 ✅</button>
+        <button class="next-btn"  id="nextBtn"  onclick="nextQuestion()">다음 ➡️</button>
+      </div>
+      <div class="result-box" id="resultBox"></div>
+    </div>
+ 
+    <div class="history-wrap">
+      <div class="history-title">📋 풀이 기록</div>
+      <div class="history-list" id="historyList"></div>
+    </div>
+  </div>
+ 
 </div>
-
-<!-- 풀이 히스토리 -->
-<div class="history-wrap">
-  <div class="history-title">📋 풀이 기록</div>
-  <div class="history-list" id="historyList"></div>
-</div>
-
+ 
 <script>
 const canvas = document.getElementById('clock');
-const ctx = canvas.getContext('2d');
-const cx = 380, cy = 380, R = 340, outerR = 372;
-
+const ctx    = canvas.getContext('2d');
+ 
 let hours = 3, minutes = 0, seconds = 0;
-let dragging = null;
-let answered = false;
-let total = 0, correct = 0;
-let history = [];
-
+let dragging = null, answered = false;
+let total = 0, correct = 0, history = [];
+ 
+/* ── 캔버스 크기: 부모 패널에 맞게 ── */
+function resizeCanvas() {
+  const panel = canvas.parentElement;
+  const size  = Math.min(panel.clientWidth, panel.clientHeight);
+  canvas.width  = size;
+  canvas.height = size;
+  drawClock();
+}
+window.addEventListener('resize', resizeCanvas);
+ 
 function toRad(d) { return d * Math.PI / 180; }
-
-function drawArrow(ang, len, lineW, color, tailLen) {
-  const ex = cx + Math.cos(ang) * len;
-  const ey = cy + Math.sin(ang) * len;
-  const tx = cx - Math.cos(ang) * tailLen;
-  const ty = cy - Math.sin(ang) * tailLen;
+ 
+function drawArrow(cx, cy, R, ang, len, lineW, color, tailLen) {
+  const ex = cx + Math.cos(ang)*len, ey = cy + Math.sin(ang)*len;
+  const tx = cx - Math.cos(ang)*tailLen, ty = cy - Math.sin(ang)*tailLen;
   ctx.save();
+  ctx.beginPath(); ctx.moveTo(tx,ty); ctx.lineTo(ex,ey);
+  ctx.strokeStyle = color; ctx.lineWidth = lineW; ctx.lineCap = 'round'; ctx.stroke();
+  const hs = lineW*3.5;
+  ctx.translate(ex,ey); ctx.rotate(ang);
   ctx.beginPath();
-  ctx.moveTo(tx, ty);
-  ctx.lineTo(ex, ey);
-  ctx.strokeStyle = color;
-  ctx.lineWidth = lineW;
-  ctx.lineCap = 'round';
-  ctx.stroke();
-  const hs = lineW * 3.5;
-  ctx.translate(ex, ey);
-  ctx.rotate(ang);
-  ctx.beginPath();
-  ctx.moveTo(0,0);
-  ctx.lineTo(-hs*2.2,-hs*0.55);
-  ctx.lineTo(-hs*1.0,0);
-  ctx.lineTo(-hs*2.2,hs*0.55);
-  ctx.closePath();
-  ctx.fillStyle = color;
-  ctx.fill();
+  ctx.moveTo(0,0); ctx.lineTo(-hs*2.2,-hs*0.55);
+  ctx.lineTo(-hs*1.0,0); ctx.lineTo(-hs*2.2,hs*0.55);
+  ctx.closePath(); ctx.fillStyle = color; ctx.fill();
   ctx.restore();
 }
-
+ 
 function drawClock() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  ctx.beginPath();
-  ctx.arc(cx, cy, outerR + 28, 0, Math.PI*2);
-  ctx.fillStyle = '#f0f4ff';
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.arc(cx, cy, R, 0, Math.PI*2);
-  ctx.fillStyle = '#ffffff';
-  ctx.fill();
-  ctx.strokeStyle = '#3949ab';
-  ctx.lineWidth = 8;
-  ctx.stroke();
-
-  // sub-numbers outside
-  const minLabels = {1:5,2:10,3:15,4:20,5:25,6:30,7:35,8:40,9:45,10:50,11:55,12:'00'};
-  ctx.font = 'bold 28px "Noto Sans KR", Arial';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillStyle = '#e53935';
-  for (let i = 1; i <= 12; i++) {
-    const a = toRad(i*30-90);
-    ctx.fillText(minLabels[i], cx+Math.cos(a)*(R+34), cy+Math.sin(a)*(R+34));
+  const S = canvas.width;
+  const cx = S/2, cy = S/2;
+  const R  = S*0.42, outerR = S*0.46;
+ 
+  ctx.clearRect(0,0,S,S);
+ 
+  ctx.beginPath(); ctx.arc(cx,cy,outerR+S*0.04,0,Math.PI*2);
+  ctx.fillStyle='#f0f4ff'; ctx.fill();
+ 
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2);
+  ctx.fillStyle='#fff'; ctx.fill();
+  ctx.strokeStyle='#3949ab'; ctx.lineWidth=S*0.012; ctx.stroke();
+ 
+  /* 분 보조 숫자 */
+  const minLabels={1:5,2:10,3:15,4:20,5:25,6:30,7:35,8:40,9:45,10:50,11:55,12:'00'};
+  ctx.font=`bold ${S*0.036}px "Noto Sans KR",Arial`;
+  ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillStyle='#e53935';
+  for(let i=1;i<=12;i++){
+    const a=toRad(i*30-90);
+    ctx.fillText(minLabels[i], cx+Math.cos(a)*(R+S*0.048), cy+Math.sin(a)*(R+S*0.048));
   }
-
-  // ticks
-  for (let i = 0; i < 60; i++) {
-    const a = toRad(i*6-90);
-    const isH = i%5===0;
+ 
+  /* 눈금 */
+  for(let i=0;i<60;i++){
+    const a=toRad(i*6-90), isH=i%5===0;
     ctx.beginPath();
-    ctx.moveTo(cx+Math.cos(a)*(R-6), cy+Math.sin(a)*(R-6));
-    ctx.lineTo(cx+Math.cos(a)*(R-(isH?46:22)), cy+Math.sin(a)*(R-(isH?46:22)));
-    ctx.strokeStyle = isH ? '#1a237e' : '#5c6bc0';
-    ctx.lineWidth = isH ? 6 : 2.5;
-    ctx.lineCap = 'butt';
-    ctx.stroke();
+    ctx.moveTo(cx+Math.cos(a)*(R-S*0.008), cy+Math.sin(a)*(R-S*0.008));
+    ctx.lineTo(cx+Math.cos(a)*(R-(isH?S*0.066:S*0.03)), cy+Math.sin(a)*(R-(isH?S*0.066:S*0.03)));
+    ctx.strokeStyle=isH?'#1a237e':'#5c6bc0';
+    ctx.lineWidth=isH?S*0.009:S*0.004; ctx.lineCap='butt'; ctx.stroke();
   }
-
-  // hour numbers
-  ctx.font = 'bold 60px "Noto Sans KR", Arial';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillStyle = '#1a237e';
-  for (let i = 1; i <= 12; i++) {
-    const a = toRad(i*30-90);
-    ctx.fillText(i, cx+Math.cos(a)*(R-90), cy+Math.sin(a)*(R-90));
+ 
+  /* 시 숫자 */
+  ctx.font=`bold ${S*0.078}px "Noto Sans KR",Arial`;
+  ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillStyle='#1a237e';
+  for(let i=1;i<=12;i++){
+    const a=toRad(i*30-90);
+    ctx.fillText(i, cx+Math.cos(a)*(R-S*0.124), cy+Math.sin(a)*(R-S*0.124));
   }
-
-  const hAng = toRad((hours%12)*30 + minutes*0.5 + seconds/120 - 90);
-  const mAng = toRad(minutes*6 + seconds*0.1 - 90);
-  const sAng = toRad(seconds*6 - 90);
-  drawArrow(hAng, R*0.50, 7, '#1a237e', 20);
-  drawArrow(mAng, R*0.70, 5, '#1565c0', 15);
-  drawArrow(sAng, R*0.80, 2.5, '#e53935', 28);
-
-  ctx.beginPath(); ctx.arc(cx,cy,14,0,Math.PI*2); ctx.fillStyle='#1a237e'; ctx.fill();
-  ctx.beginPath(); ctx.arc(cx,cy,7,0,Math.PI*2); ctx.fillStyle='#e53935'; ctx.fill();
+ 
+  /* 침 */
+  const hAng=toRad((hours%12)*30+minutes*0.5+seconds/120-90);
+  const mAng=toRad(minutes*6+seconds*0.1-90);
+  const sAng=toRad(seconds*6-90);
+  drawArrow(cx,cy,R, hAng,R*0.50,S*0.014,'#1a237e',S*0.030);
+  drawArrow(cx,cy,R, mAng,R*0.70,S*0.010,'#1565c0',S*0.022);
+  drawArrow(cx,cy,R, sAng,R*0.80,S*0.005,'#e53935',S*0.050);
+ 
+  ctx.beginPath(); ctx.arc(cx,cy,S*0.022,0,Math.PI*2); ctx.fillStyle='#1a237e'; ctx.fill();
+  ctx.beginPath(); ctx.arc(cx,cy,S*0.011,0,Math.PI*2); ctx.fillStyle='#e53935'; ctx.fill();
 }
-
+ 
+/* ── 드래그 ── */
+function getCoords(e) {
+  const r=canvas.getBoundingClientRect();
+  const sx=canvas.width/r.width, sy=canvas.height/r.height;
+  const px=e.touches?e.touches[0].clientX:e.clientX;
+  const py=e.touches?e.touches[0].clientY:e.clientY;
+  return { x:(px-r.left)*sx, y:(py-r.top)*sy };
+}
 function getAngle(e) {
-  const r = canvas.getBoundingClientRect();
-  const sx = canvas.width/r.width, sy = canvas.height/r.height;
-  const px = e.touches?e.touches[0].clientX:e.clientX;
-  const py = e.touches?e.touches[0].clientY:e.clientY;
-  return Math.atan2((py-r.top)*sy-cy, (px-r.left)*sx-cx);
+  const {x,y}=getCoords(e);
+  const cx=canvas.width/2, cy=canvas.height/2;
+  return Math.atan2(y-cy, x-cx);
 }
-
 function detectHand(e) {
-  if (answered) return null;
-  const r = canvas.getBoundingClientRect();
-  const sx = canvas.width/r.width, sy = canvas.height/r.height;
-  const px = e.touches?e.touches[0].clientX:e.clientX;
-  const py = e.touches?e.touches[0].clientY:e.clientY;
-  const mx=(px-r.left)*sx, my=(py-r.top)*sy;
+  if(answered) return null;
+  const {x:mx,y:my}=getCoords(e);
+  const cx=canvas.width/2, cy=canvas.height/2, R=canvas.width*0.42;
   const hAng=toRad((hours%12)*30+minutes*0.5-90);
   const mAng=toRad(minutes*6+seconds*0.1-90);
   const sAng=toRad(seconds*6-90);
@@ -268,91 +354,103 @@ function detectHand(e) {
   const dM=dS(mx,my,cx,cy,cx+Math.cos(mAng)*R*0.70,cy+Math.sin(mAng)*R*0.70);
   const dSc=dS(mx,my,cx,cy,cx+Math.cos(sAng)*R*0.80,cy+Math.sin(sAng)*R*0.80);
   const best=Math.min(dH,dM,dSc);
-  if(best>30) return null;
+  if(best>canvas.width*0.06) return null;
   return best===dH?'hour':best===dM?'min':'sec';
 }
-
-canvas.addEventListener('mousedown', e=>{dragging=detectHand(e);});
+ 
+canvas.addEventListener('mousedown',  e=>{dragging=detectHand(e);});
 canvas.addEventListener('touchstart', e=>{e.preventDefault();dragging=detectHand(e);},{passive:false});
-window.addEventListener('mousemove', e=>{if(!dragging)return;move(getAngle(e));});
-window.addEventListener('touchmove', e=>{if(!dragging)return;e.preventDefault();move(getAngle(e));},{passive:false});
-window.addEventListener('mouseup',()=>dragging=null);
-window.addEventListener('touchend',()=>dragging=null);
-
+window.addEventListener('mousemove',  e=>{if(!dragging)return;move(getAngle(e));});
+window.addEventListener('touchmove',  e=>{if(!dragging)return;e.preventDefault();move(getAngle(e));},{passive:false});
+window.addEventListener('mouseup',    ()=>dragging=null);
+window.addEventListener('touchend',   ()=>dragging=null);
+ 
 function move(ang) {
   const deg=(ang*180/Math.PI+90+360)%360;
-  if(dragging==='hour') hours=Math.round(deg/30)%12||12;
-  else if(dragging==='min') minutes=Math.round(deg/6)%60;
-  else seconds=Math.round(deg/6)%60;
-  drawClock(); updateDisplay();
+  if(dragging==='hour')  hours   = Math.round(deg/30)%12||12;
+  else if(dragging==='min') minutes = Math.round(deg/6)%60;
+  else                   seconds = Math.round(deg/6)%60;
+  drawClock();
 }
-
-function updateDisplay() {
-  const p=n=>String(n).padStart(2,'0');
-  document.getElementById('timeDisplay').textContent=`${p(hours)}:${p(minutes)}:${p(seconds)}`;
-}
-
+ 
+/* ── 초침 입력 시 자동 확인 ── */
+document.getElementById('ansSec').addEventListener('change', () => {
+  const sec = document.getElementById('ansSec').value;
+  if(sec !== '' && !answered) checkAnswer();
+});
+document.getElementById('ansSec').addEventListener('keydown', e => {
+  if(e.key === 'Enter' && !answered) checkAnswer();
+});
+document.getElementById('ansHour').addEventListener('keydown', e => {
+  if(e.key === 'Enter') document.getElementById('ansMin').focus();
+});
+document.getElementById('ansMin').addEventListener('keydown', e => {
+  if(e.key === 'Enter') document.getElementById('ansSec').focus();
+});
+ 
+/* ── 채점 ── */
 function checkAnswer() {
   const ah=parseInt(document.getElementById('ansHour').value);
   const am=parseInt(document.getElementById('ansMin').value);
   const as=parseInt(document.getElementById('ansSec').value);
   if(isNaN(ah)||isNaN(am)||isNaN(as)){alert('시, 분, 초를 모두 입력해 주세요!');return;}
-
+ 
   const ch=hours%12||12;
   const ok=ah===ch&&am===minutes&&as===seconds;
-
-  total++;
-  if(ok) correct++;
-  answered = true;
-
+  total++; if(ok) correct++;
+  answered=true;
+ 
   history.unshift({num:total, time:`${ch}시 ${minutes}분 ${seconds}초`, ans:`${ah}시 ${am}분 ${as}초`, ok});
-
+ 
   const box=document.getElementById('resultBox');
   box.style.display='block';
   box.className='result-box '+(ok?'correct':'wrong');
-  box.textContent=ok?`🎉 정답! ${ch}시 ${minutes}분 ${seconds}초`:`😢 틀렸어요! 정답은 ${ch}시 ${minutes}분 ${seconds}초`;
-
+  box.textContent=ok?`🎉 정답! ${ch}시 ${minutes}분 ${seconds}초`:`😢 틀렸어요! 정답: ${ch}시 ${minutes}분 ${seconds}초`;
+ 
   document.getElementById('checkBtn').style.display='none';
-  document.getElementById('nextBtn').style.display='inline-block';
-
-  updateScore();
-  renderHistory();
+  document.getElementById('nextBtn').style.display='block';
+ 
+  updateScore(); renderHistory();
 }
-
+ 
 function nextQuestion() {
   ['ansHour','ansMin','ansSec'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('resultBox').style.display='none';
-  document.getElementById('checkBtn').style.display='inline-block';
+  document.getElementById('checkBtn').style.display='block';
   document.getElementById('nextBtn').style.display='none';
-  answered = false;
+  answered=false;
+  document.getElementById('ansHour').focus();
 }
-
+ 
 function updateScore() {
   document.getElementById('scTotal').textContent=total;
   document.getElementById('scCorrect').textContent=correct;
   document.getElementById('scWrong').textContent=total-correct;
   document.getElementById('scPct').textContent=total>0?Math.round(correct/total*100)+'%':'-';
 }
-
+ 
 function resetScore() {
   if(!confirm('점수를 초기화할까요?')) return;
   total=0; correct=0; history=[];
   updateScore(); renderHistory();
 }
-
+ 
 function renderHistory() {
   const list=document.getElementById('historyList');
   list.innerHTML=history.map(h=>`
     <div class="history-item">
-      <span class="h-num">${h.num}번</span>
-      <span class="h-time">⏰ ${h.time}</span>
-      <span class="h-ans">✏️ ${h.ans}</span>
-      <span class="h-badge ${h.ok?'ok':'no'}">${h.ok?'✅ 정답':'❌ 오답'}</span>
+      <div class="h-top">
+        <span class="h-num">${h.num}번</span>
+        <span class="h-badge ${h.ok?'ok':'no'}">${h.ok?'✅ 정답':'❌ 오답'}</span>
+      </div>
+      <div class="h-time">⏰ ${h.time}</div>
+      <div class="h-ans">✏️ ${h.ans}</div>
     </div>
   `).join('');
 }
-
-drawClock(); updateDisplay();
+ 
+/* 초기 실행 */
+setTimeout(resizeCanvas, 50);
 </script>
 </body>
 </html>
