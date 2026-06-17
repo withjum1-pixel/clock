@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -32,7 +31,7 @@ h1 { font-size: 24px; font-weight: 700; color: #1a237e; white-space: nowrap; }
 .drag-tip { font-size: 13px; color: #5c6bc0; background: #e8eaf6; border-radius: 8px; padding: 4px 14px; }
 .legend { display: flex; gap: 14px; align-items: center; margin-left: auto; }
 .legend-item { display: flex; align-items: center; gap: 5px; font-size: 13px; color: #3949ab; font-weight: 700; }
- 
+
 /* 메인 3열 — 남은 높이 전부 사용 */
 .main-layout {
   display: flex;
@@ -43,7 +42,7 @@ h1 { font-size: 24px; font-weight: 700; color: #1a237e; white-space: nowrap; }
   flex: 1;
   min-height: 0;
 }
- 
+
 /* ── 왼쪽: 점수판 ── */
 .left-panel {
   display: flex;
@@ -75,7 +74,7 @@ h1 { font-size: 24px; font-weight: 700; color: #1a237e; white-space: nowrap; }
   cursor: pointer; width: 100%; flex-shrink: 0;
 }
 .reset-score-btn:hover { background: #ffebee; }
- 
+
 /* ── 가운데: 시계 ── */
 .center-panel {
   flex: 1;
@@ -85,7 +84,7 @@ h1 { font-size: 24px; font-weight: 700; color: #1a237e; white-space: nowrap; }
   justify-content: center;
 }
 canvas { display: block; cursor: crosshair; }
- 
+
 /* ── 오른쪽: 문제 + 히스토리 ── */
 .right-panel {
   width: 320px;
@@ -94,7 +93,7 @@ canvas { display: block; cursor: crosshair; }
   flex-direction: column;
   gap: 10px;
 }
- 
+
 .question-box {
   background: #fff;
   border-radius: 20px;
@@ -117,7 +116,7 @@ canvas { display: block; cursor: crosshair; }
 }
 .input-group input:focus { border-color: #3949ab; background: #e8eaf6; }
 .sep { font-size: 36px; font-weight: 700; color: #3949ab; padding-top: 24px; }
- 
+
 /* 버튼 */
 .btn-row { display: flex; gap: 8px; justify-content: center; }
 .check-btn {
@@ -136,7 +135,7 @@ canvas { display: block; cursor: crosshair; }
 }
 .result-box.correct { background: #e8f5e9; color: #2e7d32; }
 .result-box.wrong   { background: #ffebee; color: #c62828; }
- 
+
 /* 히스토리 */
 .history-wrap {
   flex: 1;
@@ -162,7 +161,7 @@ canvas { display: block; cursor: crosshair; }
 </style>
 </head>
 <body>
- 
+
 <div class="top-bar">
   <h1>🕐 시각 읽기 연습</h1>
   <span class="drag-tip">✋ 시침·분침·초침을 드래그해서 시각 설정 → 답 입력 후 확인!</span>
@@ -172,9 +171,9 @@ canvas { display: block; cursor: crosshair; }
     <div class="legend-item"><div style="background:#e53935;height:3px;width:24px;border-radius:3px;"></div>초침</div>
   </div>
 </div>
- 
+
 <div class="main-layout">
- 
+
   <!-- 왼쪽: 점수판 -->
   <div class="left-panel">
     <div class="score-card sc-total">
@@ -195,12 +194,12 @@ canvas { display: block; cursor: crosshair; }
     </div>
     <button class="reset-score-btn" onclick="resetScore()">점수 초기화 🔄</button>
   </div>
- 
+
   <!-- 가운데: 시계 -->
   <div class="center-panel">
     <canvas id="clock"></canvas>
   </div>
- 
+
   <!-- 오른쪽: 문제 + 히스토리 -->
   <div class="right-panel">
     <div class="question-box">
@@ -227,23 +226,23 @@ canvas { display: block; cursor: crosshair; }
       </div>
       <div class="result-box" id="resultBox"></div>
     </div>
- 
+
     <div class="history-wrap">
       <div class="history-title">📋 풀이 기록</div>
       <div class="history-list" id="historyList"></div>
     </div>
   </div>
- 
+
 </div>
- 
+
 <script>
 const canvas = document.getElementById('clock');
 const ctx    = canvas.getContext('2d');
- 
+
 let hours = 3, minutes = 0, seconds = 0;
 let dragging = null, answered = false;
 let total = 0, correct = 0, history = [];
- 
+
 /* ── 캔버스 크기: 부모 패널에 맞게 ── */
 function resizeCanvas() {
   const panel = canvas.parentElement;
@@ -253,9 +252,9 @@ function resizeCanvas() {
   drawClock();
 }
 window.addEventListener('resize', resizeCanvas);
- 
+
 function toRad(d) { return d * Math.PI / 180; }
- 
+
 function drawArrow(cx, cy, R, ang, len, lineW, color, tailLen) {
   const ex = cx + Math.cos(ang)*len, ey = cy + Math.sin(ang)*len;
   const tx = cx - Math.cos(ang)*tailLen, ty = cy - Math.sin(ang)*tailLen;
@@ -270,21 +269,21 @@ function drawArrow(cx, cy, R, ang, len, lineW, color, tailLen) {
   ctx.closePath(); ctx.fillStyle = color; ctx.fill();
   ctx.restore();
 }
- 
+
 function drawClock() {
   const S = canvas.width;
   const cx = S/2, cy = S/2;
   const R  = S*0.42, outerR = S*0.46;
- 
+
   ctx.clearRect(0,0,S,S);
- 
+
   ctx.beginPath(); ctx.arc(cx,cy,outerR+S*0.04,0,Math.PI*2);
   ctx.fillStyle='#f0f4ff'; ctx.fill();
- 
+
   ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2);
   ctx.fillStyle='#fff'; ctx.fill();
   ctx.strokeStyle='#3949ab'; ctx.lineWidth=S*0.012; ctx.stroke();
- 
+
   /* 분 보조 숫자 */
   const minLabels={1:5,2:10,3:15,4:20,5:25,6:30,7:35,8:40,9:45,10:50,11:55,12:'00'};
   ctx.font=`bold ${S*0.036}px "Noto Sans KR",Arial`;
@@ -293,7 +292,7 @@ function drawClock() {
     const a=toRad(i*30-90);
     ctx.fillText(minLabels[i], cx+Math.cos(a)*(R+S*0.048), cy+Math.sin(a)*(R+S*0.048));
   }
- 
+
   /* 눈금 */
   for(let i=0;i<60;i++){
     const a=toRad(i*6-90), isH=i%5===0;
@@ -303,7 +302,7 @@ function drawClock() {
     ctx.strokeStyle=isH?'#1a237e':'#5c6bc0';
     ctx.lineWidth=isH?S*0.009:S*0.004; ctx.lineCap='butt'; ctx.stroke();
   }
- 
+
   /* 시 숫자 */
   ctx.font=`bold ${S*0.078}px "Noto Sans KR",Arial`;
   ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillStyle='#1a237e';
@@ -311,7 +310,7 @@ function drawClock() {
     const a=toRad(i*30-90);
     ctx.fillText(i, cx+Math.cos(a)*(R-S*0.124), cy+Math.sin(a)*(R-S*0.124));
   }
- 
+
   /* 침 */
   const hAng=toRad((hours%12)*30+minutes*0.5+seconds/120-90);
   const mAng=toRad(minutes*6+seconds*0.1-90);
@@ -319,11 +318,11 @@ function drawClock() {
   drawArrow(cx,cy,R, hAng,R*0.50,S*0.014,'#1a237e',S*0.030);
   drawArrow(cx,cy,R, mAng,R*0.70,S*0.010,'#1565c0',S*0.022);
   drawArrow(cx,cy,R, sAng,R*0.80,S*0.005,'#e53935',S*0.050);
- 
+
   ctx.beginPath(); ctx.arc(cx,cy,S*0.022,0,Math.PI*2); ctx.fillStyle='#1a237e'; ctx.fill();
   ctx.beginPath(); ctx.arc(cx,cy,S*0.011,0,Math.PI*2); ctx.fillStyle='#e53935'; ctx.fill();
 }
- 
+
 /* ── 드래그 ── */
 function getCoords(e) {
   const r=canvas.getBoundingClientRect();
@@ -357,14 +356,14 @@ function detectHand(e) {
   if(best>canvas.width*0.06) return null;
   return best===dH?'hour':best===dM?'min':'sec';
 }
- 
+
 canvas.addEventListener('mousedown',  e=>{dragging=detectHand(e);});
 canvas.addEventListener('touchstart', e=>{e.preventDefault();dragging=detectHand(e);},{passive:false});
 window.addEventListener('mousemove',  e=>{if(!dragging)return;move(getAngle(e));});
 window.addEventListener('touchmove',  e=>{if(!dragging)return;e.preventDefault();move(getAngle(e));},{passive:false});
 window.addEventListener('mouseup',    ()=>dragging=null);
 window.addEventListener('touchend',   ()=>dragging=null);
- 
+
 function move(ang) {
   const deg=(ang*180/Math.PI+90+360)%360;
   if(dragging==='hour')  hours   = Math.round(deg/30)%12||12;
@@ -372,11 +371,10 @@ function move(ang) {
   else                   seconds = Math.round(deg/6)%60;
   drawClock();
 }
- 
-/* ── 초침 입력 시 자동 확인 ── */
+
+/* ── 입력 흐름 및 자동 확인 ── */
 document.getElementById('ansSec').addEventListener('change', () => {
-  const sec = document.getElementById('ansSec').value;
-  if(sec !== '' && !answered) checkAnswer();
+  if(!answered) checkAnswer();
 });
 document.getElementById('ansSec').addEventListener('keydown', e => {
   if(e.key === 'Enter' && !answered) checkAnswer();
@@ -385,34 +383,40 @@ document.getElementById('ansHour').addEventListener('keydown', e => {
   if(e.key === 'Enter') document.getElementById('ansMin').focus();
 });
 document.getElementById('ansMin').addEventListener('keydown', e => {
-  if(e.key === 'Enter') document.getElementById('ansSec').focus();
+  if(e.key === 'Enter') {
+    if(seconds === 0 && !answered) checkAnswer();
+    else document.getElementById('ansSec').focus();
+  }
 });
- 
+
 /* ── 채점 ── */
 function checkAnswer() {
   const ah=parseInt(document.getElementById('ansHour').value);
   const am=parseInt(document.getElementById('ansMin').value);
   const as=parseInt(document.getElementById('ansSec').value);
-  if(isNaN(ah)||isNaN(am)||isNaN(as)){alert('시, 분, 초를 모두 입력해 주세요!');return;}
- 
+  if(isNaN(ah)||isNaN(am)){alert('시와 분을 입력해 주세요!');return;}
+  if(isNaN(as) && seconds !== 0){alert('초를 입력해 주세요!');return;}
+  const finalSec = isNaN(as) ? 0 : as;
+
   const ch=hours%12||12;
-  const ok=ah===ch&&am===minutes&&as===seconds;
+  const ok=ah===ch&&am===minutes&&finalSec===seconds;
   total++; if(ok) correct++;
   answered=true;
- 
-  history.unshift({num:total, time:`${ch}시 ${minutes}분 ${seconds}초`, ans:`${ah}시 ${am}분 ${as}초`, ok});
- 
+
+  const ansSecLabel = isNaN(as) ? '0(미입력)' : String(as);
+  history.unshift({num:total, time:`${ch}시 ${minutes}분 ${seconds}초`, ans:`${ah}시 ${am}분 ${ansSecLabel}초`, ok});
+
   const box=document.getElementById('resultBox');
   box.style.display='block';
   box.className='result-box '+(ok?'correct':'wrong');
   box.textContent=ok?`🎉 정답! ${ch}시 ${minutes}분 ${seconds}초`:`😢 틀렸어요! 정답: ${ch}시 ${minutes}분 ${seconds}초`;
- 
+
   document.getElementById('checkBtn').style.display='none';
   document.getElementById('nextBtn').style.display='block';
- 
+
   updateScore(); renderHistory();
 }
- 
+
 function nextQuestion() {
   ['ansHour','ansMin','ansSec'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('resultBox').style.display='none';
@@ -421,20 +425,20 @@ function nextQuestion() {
   answered=false;
   document.getElementById('ansHour').focus();
 }
- 
+
 function updateScore() {
   document.getElementById('scTotal').textContent=total;
   document.getElementById('scCorrect').textContent=correct;
   document.getElementById('scWrong').textContent=total-correct;
   document.getElementById('scPct').textContent=total>0?Math.round(correct/total*100)+'%':'-';
 }
- 
+
 function resetScore() {
   if(!confirm('점수를 초기화할까요?')) return;
   total=0; correct=0; history=[];
   updateScore(); renderHistory();
 }
- 
+
 function renderHistory() {
   const list=document.getElementById('historyList');
   list.innerHTML=history.map(h=>`
@@ -448,7 +452,7 @@ function renderHistory() {
     </div>
   `).join('');
 }
- 
+
 /* 초기 실행 */
 setTimeout(resizeCanvas, 50);
 </script>
